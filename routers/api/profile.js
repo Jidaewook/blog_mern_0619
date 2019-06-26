@@ -222,6 +222,30 @@ router.post('/education', authCheck, (req, res) => {
 });
 
 
+//@router DELETE api/profile/edu/:edu_id
+//@desc  Delete education from profile
+//@access Private
+
+router.delete('/edu/:edu_id', authCheck, (req, res) => {
+    profileModel
+        .findOne({user: req.user.id})
+        .then(profile => {
+            const removeIndex = profile.education
+                .map(item => item.id)
+                .indexOf(req.params.edu_id);
+
+                profile.education.splice(removeIndex, 1);
+
+                profile.save()
+                    .then(profile => 
+                        res.json(profile)
+                    )
+                    .catch(err => res.json(err));
+        })
+        .catch(err=> res.json(err));
+});
+
+
 //@router POST api/profile/exp
 //@desc  Add experience to profile
 //@access Private
@@ -259,6 +283,32 @@ router.post('/exp', authCheck, (req, res) => {
         .catch(err => res.json(err));
 });
 
+
+//@router DELETE api/profile/exp/:epx_id
+//@desc  Delete experience from profile
+//@access Private
+
+router.delete('/exp/:exp_id', authCheck, (req, res) => {
+    profileModel
+        .findOne({user: req.user.id})
+        .then(profile => {
+            //Get remove index
+            const removeIndex = profile.experience
+                .map(item => item.id)
+                .indexOf(req.params.exp_id);
+
+            //Splice out of array
+            profile.experience.splice(removeIndex, 1);
+            
+            //save
+            profile.save()
+                .then(profile => 
+                    res.status(200).json(profile)    
+                )
+                .catch(err=> res.json(err));
+        })
+        .catch(err => res.json(err));
+});
 
 
 module.exports = router;
