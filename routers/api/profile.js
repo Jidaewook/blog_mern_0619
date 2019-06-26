@@ -4,6 +4,7 @@ const router = express();
 const mongoose = require('mongoose');
 const userModel = require('../../models/user');
 const profileModel = require('../../models/profile');
+const validateProfileInput = require('../../validation/profile');
 
 //private 접근을 할 때, accessToken을 넣기 위한 루트인즈
 const passport = require('passport');
@@ -25,7 +26,8 @@ router.get('/', authCheck, (req, res) => {
     const errors = {};
 
     profileModel
-        .findOne({ user: req.body.id })
+        .findOne({ user: req.user.id })
+        .populate('user', ['name', 'avatar'])
         .then(profile => {
             if (!profile) {
                 errors.noprofile = 'There is no profile for this user';
@@ -42,6 +44,16 @@ router.get('/', authCheck, (req, res) => {
 
 router.post('/', authCheck, (req, res) => {
  
+    const {errors, isValid} = validateProfileInput(req.body);    
+
+    //check Validation
+    if(!isValid){
+        //Return any errors with 400status
+        return res.status(400).json(errors);
+    }
+
+
+
 //GET Fileds 
     const profileFields = {};
 
