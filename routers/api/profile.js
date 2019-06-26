@@ -38,6 +38,30 @@ router.get('/', authCheck, (req, res) => {
         .catch(err => res.json(err))
 });
 
+//@router GET api/profileds/all
+//@desc get All user Profiles
+//@access Public
+
+router.get('/all', (req, res) => {
+    const errors = {};
+
+    profileModel.find()
+        .populate('user', ['name', 'avatar'])
+        .then(profiles => {
+            if(!profiles){
+                errors.noprofile = 'There is no profiles';
+                return res.status(404).json(errors);
+
+            }
+            res.json(profiles);
+        })
+        
+        .catch(err => res.json(err))
+
+});
+
+
+
 //@router POST api/profile/
 //@desc  Create or edit user profile
 //@access Private
@@ -113,6 +137,9 @@ router.post('/', authCheck, (req, res) => {
         .catch(err => req.json(err));
 
 });
+
+
+
 
 
 module.exports = router;
