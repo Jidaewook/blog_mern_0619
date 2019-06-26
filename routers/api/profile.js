@@ -21,7 +21,7 @@ router.get('/test', (req, res) => res.json({ msg: 'Profile works' }));
 //@desc get current user Profile route
 //@access Private
 
-router.get('/', (req, res) => {
+router.get('/', authCheck, (req, res) => {
     const errors = {};
 
     profileModel
@@ -36,11 +36,71 @@ router.get('/', (req, res) => {
         .catch(err => res.json(err))
 });
 
+//@router POST api/profile/
+//@desc  Create or edit user profile
+//@access Private
 
-//@router POST api/profile
-//@desc  Profile route
-//@access PUBLIC
+router.post('/', authCheck, (req, res) => {
+ 
+//GET Fileds 
+    const profileFields = {};
 
+    profileFields.user = req.user.id;
+    
+    if(req.body.handle) profileFields.handle = req.body.handle;
+    if(req.body.company) profileFields.company = req.body.company;
+    if(req.body.website) profileFields.website = req.body.website;
+    if(req.body.location) profileFields.location = req.body.location;
+    if(req.body.bio) profileFields.bio = req.body.bio;
+    if(req.body.status) profileFields.status = req.body.status;
+    if(req.body.githubusername) profileFields.githubusername = req.body.githubusername;
+
+//Skills - Split into array
+    if(typeof req.body.skills !== 'undefined'){
+        profileFields.skills = req.body.skills.split(',');
+    }
+
+//Social
+    profileFields.social = {};
+
+    if(req.body.youtube) profileFields.social.youtube = req.body.youtube;
+    if(req.body.twitter) profileFields.social.twitter = req.body.twitter;
+    if(req.body.facebook) profileFields.social.facebook = req.body.facebook;
+    if(req.body.instagram) profileFields.social.instagram = req.body.instagram;
+
+    profileModel
+        .findOne({user: req.user.id})
+        .then(profile => {
+            if(profile){
+                //update
+                profileModel
+                    .findOneAndUpdate(
+                        {user: req.user.id},
+                        {$set: profileFields},
+                        {new: true}
+                    )
+                    .then(profile => res.json(profile))
+                    .catch(err => req.json(err));
+            } else {
+                //check if handle exists
+                profileModel
+                    .findOne({handle: profileFields.handle})
+                    .then(profile => {
+                        if(profile){
+                            errors.handle = 'That handle already exists';
+                            res.status(400).json(errors);
+                        }
+                        new profileModel(profileFields)
+                            .save()
+                            .then(profile => res.json(profile))
+                            .catch(err => req.json(err));
+                    })
+                    .catch(err => req.json(err));
+            }
+        })
+        .catch(err => req.json(err));
+
+});
 
 
 module.exports = router;
