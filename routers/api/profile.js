@@ -38,7 +38,7 @@ router.get('/', authCheck, (req, res) => {
         .catch(err => res.json(err))
 });
 
-//@router GET api/profileds/all
+//@router GET api/profile/all
 //@desc get All user Profiles
 //@access Public
 
@@ -55,10 +55,30 @@ router.get('/all', (req, res) => {
             }
             res.json(profiles);
         })
-        
+
         .catch(err => res.json(err))
 
 });
+
+//@router GET api/profile/handle/:handle
+//@desc get profile by handle
+//@access Public
+
+router.get('/handle/:handle', (req, res) => {
+    const errors = {};
+
+    profileModel
+        .findOne({handle: req.params.handle})
+        .populate('user', ['name', 'avatar'])
+        .then(profile => {
+            if(!profile){
+                errors.noprofile = 'There is no profile for this user';
+                return res.status(400).json(errors);
+            }
+            res.json(profile);
+        })
+        .catch(err => res.status(404).json(err))
+})
 
 
 
