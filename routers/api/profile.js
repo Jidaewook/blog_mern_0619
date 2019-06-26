@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const userModel = require('../../models/user');
 const profileModel = require('../../models/profile');
 const validateProfileInput = require('../../validation/profile');
+const validateEducationInput = require('../../validation/education');
 
 //private 접근을 할 때, accessToken을 넣기 위한 루트인즈
 const passport = require('passport');
@@ -178,6 +179,45 @@ router.post('/', authCheck, (req, res) => {
 
 });
 
+//@router POST api/profile/education
+//@desc  Add education to profile
+//@access Private
+
+router.post('/education', authCheck, (req, res) => {
+   const {errors, isValid} = validateEducationInput(req.body); 
+
+    //Check Validation
+    if(!isValid){
+        //Return any errors with 400 status
+        return res.status(400).json(errors);
+    }
+
+    profileModel
+        .findOne({user: req.user.id})
+        .then(profile => {
+            const newEdu = {
+                school: req.body.school,
+                degree: req.body.degree,
+                fieldofstudy: req.body.fieldofstudy,
+                from: req.body.from,
+                to: req.body.to,
+                current: req.body.current,
+                description: req.body.description
+            };
+
+            //Add to exp array
+            profile.education.unshift(newEdu);
+
+            profile.save()
+                .then(profile => 
+                    res.json(profile)
+                )
+                .catch(err => res.json(err));
+
+        })
+        .catch(err => res.json(err));
+
+});
 
 
 
