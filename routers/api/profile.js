@@ -6,6 +6,8 @@ const userModel = require('../../models/user');
 const profileModel = require('../../models/profile');
 const validateProfileInput = require('../../validation/profile');
 const validateEducationInput = require('../../validation/education');
+const validateExperienceInput = require('../../validation/experience');
+
 
 //private 접근을 할 때, accessToken을 넣기 위한 루트인즈
 const passport = require('passport');
@@ -205,7 +207,7 @@ router.post('/education', authCheck, (req, res) => {
                 description: req.body.description
             };
 
-            //Add to exp array
+            //Add to edu array
             profile.education.unshift(newEdu);
 
             profile.save()
@@ -219,6 +221,43 @@ router.post('/education', authCheck, (req, res) => {
 
 });
 
+
+//@router POST api/profile/exp
+//@desc  Add experience to profile
+//@access Private
+
+router.post('/exp', authCheck, (req, res) => {
+    const {errors, isValid} = validateExperienceInput(req.body);
+
+    //Check Validation
+    if(!isValid){
+        return res.status(400).json(errors);
+    }
+
+    profileModel
+        .findOne({user: req.user.id})
+        .then(profile => {
+            const newExp = {
+                title: req.body.title,
+                company: req.body.company,
+                from: req.body.from,
+                location: req.body.location,
+                to: req.body.to,
+                current: req.body.current,
+                description: req.body.description
+            };
+
+            //Add to exp array
+            profile.experience.unshift(newExp);
+            profile.save()
+                .then(profile => 
+                    res.json(profile)
+                )
+                .catch(err => res.json(err));
+
+        })
+        .catch(err => res.json(err));
+});
 
 
 
