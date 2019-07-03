@@ -311,7 +311,7 @@ router.delete('/exp/:exp_id', authCheck, (req, res) => {
 });
 
 //@route Delete api/profile
-//@desc delete user and profile
+//@desc delete user and profile, 유저 계정까지 완전 삭제
 //@access private
 
 router.delete('/', authCheck, (req, res) => {
