@@ -5,6 +5,7 @@ const passport = require('passport');
 const authCheck = passport.authenticate('jwt', {session: false});
 
 const postModel = require('../../models/post');
+const profileModel = require('../../models/profile');
 const validatePostInput = require('../../validation/post');
 
 
@@ -43,5 +44,55 @@ router.post('/', authCheck, (req, res) => {
 
 });
 
+//@route Get api/posts
+//@desc Get posts
+//@access Public
 
+router.get('/', (req, res) => {
+    postModel.find()
+        .sort({date: -1})
+        .then(posts => {
+            res.json(posts);
+        })
+        .catch(err => res.json(err));
+});
+
+//@route Get api/posts/:id
+//@desc Get post by id  게시물에 대한 아이디, 특정 게시물(상품)을 보러 들어가는 작업
+//@access Public
+
+router.get('/:id', (req, res) => {
+    postModel.findById(req.params.id)
+        .then(post => {
+            res.json(post);
+        })
+        .catch(err => res.json(err));
+});
+
+
+//@route Delete api/posts/:id
+//@desc Delete post
+//@access private
+
+router.delete('/:id', authCheck, (req, res) => {
+    profileModel.findOne({user: req.user.id})
+        .then(profile => {
+            postModel.findById(req.params.id)
+                .then(post => {
+                    //Check for post owner
+                    if(post.user.toString() !== req.user.id){
+                        return res.status(401).json({msg: 'User not Authorized'});
+                            
+                    }
+
+                    //Delete
+                    post
+                        .remove()
+                        .then(() => res.json({msg: 'delete success'}))
+                        .catch(err => res.json(err));
+                })
+                .catch(err => res.json(err));
+        })
+        .catch(err => res.json(err));
+});
 module.exports = router;
