@@ -310,5 +310,21 @@ router.delete('/exp/:exp_id', authCheck, (req, res) => {
         .catch(err => res.json(err));
 });
 
+//@route Delete api/profile
+//@desc delete user and profile
+//@access private
+
+router.delete('/', authCheck, (req, res) => {
+    profileModel.findOneAndDelete({user: req.user.id})
+        .then(() => {
+            userModel.findOneAndRemove({_id: req.user.id})
+                .then(() => {
+                    res.json({success: true});
+                })
+                .catch(err => res.json(err));
+        })
+        .catch(err => res.json(err));
+});
+
 
 module.exports = router;
